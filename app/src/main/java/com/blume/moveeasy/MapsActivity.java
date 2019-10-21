@@ -8,6 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.gesture.Prediction;
 import android.location.Location;
@@ -17,10 +18,18 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blume.moveeasy.directionhelpers.FetchURL;
@@ -58,6 +67,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -82,12 +92,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationRequest mLocationRequest;
     Marker currentUserLocationMarker, destinationMarker;
     Polyline currentPolyline;
+    LinearLayout linearLayout;
+    //listview
+    ListView listView;
+    String mTitle[] = {"Motorbike", "Pickup", "Truck"};
+    String mDescription[] = {"Motorbike Description", "Pickup Description", "Truck Description"};
+    int images[] = {R.drawable.ic_motorcycle,R.drawable.ic_pickup_truck,R.drawable.ic_delivery_truck};
+
+    private Button btnFind;
+
     private MarkerOptions place1, place2;
 
     private MaterialSearchBar materialSearchBar;
-    private DrawerLayout drawerLayout;
+    //private DrawerLayout drawerLayout;
     private View mapView;
-    private Button btnFind;
+
 
     private final float DEFAULT_ZOOM = 12;
 
@@ -98,8 +117,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        listView=findViewById(R.id.listView);
+
+        MyAdapter adapter = new MyAdapter(this, mTitle, mDescription, images);
+        listView.setAdapter(adapter);
+
+
+
+
+
+
+
+
+
         materialSearchBar = findViewById(R.id.searchBar);
         btnFind = findViewById(R.id.request);
+        linearLayout = findViewById(R.id.bottom_sheet);
+
+        final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
+
+        btnFind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                Button btnFind = (Button) view;
+                btnFind.setVisibility(View.INVISIBLE);
+            }
+        });
+
 
         place1 = new MarkerOptions().position(new LatLng(-1.310136, 36.813501)).title("Strathmore");
         //place2 = new MarkerOptions().position(new LatLng(-1.176120, 36.928271)).title("Kenyatta Uni");
@@ -270,6 +315,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                 }
+               /* Button btnFind = (Button) v;
+                btnFind.setVisibility(View.VISIBLE);*/
             }
 
             @Override
@@ -277,6 +324,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+
+
+
+    }
+
+    class MyAdapter extends ArrayAdapter<String> {
+
+        Context context;
+        String rTitle[];
+        String rDescreption[];
+        int rImgs[];
+
+        MyAdapter (Context c, String title[],String description[], int imgs[]){
+            super(c, R.layout.row, R.id.textView1, title);
+            this.context=c;
+            this.rTitle = title;
+            this.rDescreption=description;
+            this.rImgs = imgs;
+
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View row = layoutInflater.inflate(R.layout.row, parent, false);
+            ImageView images = row.findViewById(R.id.img1);
+            TextView mTitle =row.findViewById(R.id.textView1);
+            TextView mDescription =row.findViewById(R.id.textView2);
+
+            images.setImageResource(rImgs[position]);
+            mTitle.setText(rTitle[position]);
+            mDescription.setText(rDescreption[position]);
+
+
+
+            return row;
+        }
     }
 
 
@@ -441,4 +526,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             currentPolyline.remove();
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
     }
+
+
 }
