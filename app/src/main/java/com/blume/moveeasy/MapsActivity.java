@@ -8,6 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.gesture.Prediction;
 import android.location.Location;
@@ -17,10 +18,17 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blume.moveeasy.directionhelpers.FetchURL;
@@ -60,6 +68,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -96,6 +105,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private View mapView;
     private Button mRequest;
 
+    //listview
+    LinearLayout linearLayout;
+    ListView listView;
+    String mTitle[] = {"Motorbike", "Pickup", "Truck"};
+    String mDescription[] = {"Motorbike Description", "Pickup Description", "Truck Description"};
+    int images[] = {R.drawable.ic_motorcycle,R.drawable.ic_pickup_truck,R.drawable.ic_delivery_truck};
+
+
     private final float DEFAULT_ZOOM = 14;
 
 
@@ -105,12 +122,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        //listview adapter
+        listView=findViewById(R.id.listView);
+
+        MyAdapter adapter = new MyAdapter(this, mTitle, mDescription, images);
+        listView.setAdapter(adapter);
+        linearLayout = findViewById(R.id.bottom_sheet);
+
+        final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
+
+
         materialSearchBar = findViewById(R.id.searchBar);
         mRequest = findViewById(R.id.request);
+
 
         mRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (destinationMarker == null) {
 
                     Toast.makeText(MapsActivity.this, "Please Enter Destination", Toast.LENGTH_LONG).show();
@@ -273,6 +302,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                                 destinationMarker = mMap.addMarker(uMarkerOptions);
                                 new FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
+                                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
                             }
 
@@ -312,15 +342,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
+    class MyAdapter extends ArrayAdapter<String> {
+
+        Context context;
+        String rTitle[];
+        String rDescreption[];
+        int rImgs[];
+
+        MyAdapter (Context c, String title[],String description[], int imgs[]){
+            super(c, R.layout.row, R.id.textView1, title);
+            this.context=c;
+            this.rTitle = title;
+            this.rDescreption=description;
+            this.rImgs = imgs;
+
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View row = layoutInflater.inflate(R.layout.row, parent, false);
+            ImageView images = row.findViewById(R.id.img1);
+            TextView mTitle =row.findViewById(R.id.textView1);
+            TextView mDescription =row.findViewById(R.id.textView2);
+
+            images.setImageResource(rImgs[position]);
+            mTitle.setText(rTitle[position]);
+            mDescription.setText(rDescreption[position]);
+
+
+
+            return row;
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
