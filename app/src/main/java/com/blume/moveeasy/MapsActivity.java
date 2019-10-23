@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 
 import com.blume.moveeasy.directionhelpers.FetchURL;
 import com.blume.moveeasy.directionhelpers.TaskLoadedCallback;
+import com.blume.moveeasy.model.MyObject;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -109,8 +111,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LinearLayout linearLayout;
     ListView listView;
     String mTitle[] = {"Motorbike", "Pickup", "Truck"};
-    String mDescription[] = {"Motorbike Description", "Pickup Description", "Truck Description"};
+    String mDescription[] = {"0", "0", "0"};
     int images[] = {R.drawable.ic_motorcycle,R.drawable.ic_pickup_truck,R.drawable.ic_delivery_truck};
+
+    //distance between pickup and destination
+    float toDestination[] = new float[10];
 
 
     private final float DEFAULT_ZOOM = 14;
@@ -122,18 +127,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        //listview adapter
-        listView=findViewById(R.id.listView);
-
-        MyAdapter adapter = new MyAdapter(this, mTitle, mDescription, images);
-        listView.setAdapter(adapter);
-        linearLayout = findViewById(R.id.bottom_sheet);
-
-        final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
-
 
         materialSearchBar = findViewById(R.id.searchBar);
+        //Confirm Request Button
         mRequest = findViewById(R.id.request);
+        mRequest.setVisibility(View.GONE);
+
 
 
         mRequest.setOnClickListener(new View.OnClickListener() {
@@ -300,9 +299,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 uMarkerOptions.position(latLngOfPlace);
                                 uMarkerOptions.title("Destination Location");
                                 uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                                Location.distanceBetween(userLatLng.latitude, userLatLng.longitude, latLngOfPlace.latitude, latLngOfPlace.longitude, toDestination);
+                                uMarkerOptions.snippet(toDestination[0] + " Metres away");
+                                getEstimate(toDestination);
+
+                                //listview adapter
+                                listView=findViewById(R.id.listView);
+
+                                MyAdapter adapter = new MyAdapter(MapsActivity.this, mTitle, mDescription, images);
+                                listView.setAdapter(adapter);
+                                linearLayout = findViewById(R.id.bottom_sheet);
+
+
+
+                                final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
+
                                 destinationMarker = mMap.addMarker(uMarkerOptions);
                                 new FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
                                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+
+                                /*listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                    @Override
+                                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                        //mRequest.setVisibility(View.VISIBLE);
+                                        //String vehicleType = parent.getItemAtPosition(position).toString();
+                                        MyObject tmp=(MyObject) parent.getItemAtPosition(position);
+                                        Toast.makeText(MapsActivity.this, "Vehicle: "+tmp.getVehicle(), Toast.LENGTH_LONG).show();
+                                    }
+
+                                    @Override
+                                    public void onNothingSelected(AdapterView<?> parent) {
+
+                                    }
+                                });*/
+
+                                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                    @Override
+                                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                        if(position == 0){
+                                            Toast.makeText(MapsActivity.this, "Motorcycle Selected", Toast.LENGTH_LONG).show();
+                                            mRequest.setVisibility(View.VISIBLE);
+                                        }
+                                        if(position == 1){
+                                            Toast.makeText(MapsActivity.this, "Pick-up Selected", Toast.LENGTH_LONG).show();
+                                            mRequest.setVisibility(View.VISIBLE);
+                                        }
+                                        if(position == 2){
+                                            Toast.makeText(MapsActivity.this, "Truck Selected", Toast.LENGTH_LONG).show();
+                                            mRequest.setVisibility(View.VISIBLE);
+                                        }
+
+                                    }
+                                });
+
+                                //mRequest.setVisibility(View.VISIBLE);
+
 
                             }
 
@@ -376,6 +428,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             return row;
         }
+    }
+
+    //Price Caclulator
+    private void getEstimate(float distance[]){
+        float approxDist = distance[0];
+
+        //for bike
+        float bikeDouble = ((approxDist/1000)*10)+50;
+        int bikePrice = Math.round(bikeDouble);
+
+        //for pickup
+        float pickupDouble = ((approxDist/1000)*20)+100;
+        int pickupPrice = Math.round(pickupDouble);
+
+        //for Truck
+        float truckDouble = ((approxDist/1000)*50)+200;
+        int truckPrice = Math.round(truckDouble);
+
+        mDescription[0] = Integer.toString(bikePrice);
+        mDescription[1] = Integer.toString(pickupPrice);
+        mDescription[2] = Integer.toString(truckPrice);
+
+
     }
 
     @Override
@@ -482,12 +557,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         locationLong = Double.parseDouble(map.get(1).toString());
                     }
                     LatLng driverLatLng = new LatLng(locationLat,locationLong);
-                    if(mDriverMarker != null){
+                    /*if(mDriverMarker != null){
                         mDriverMarker.remove();
-                    }
+                    }*/
                     float results[] = new float[10];
-                    Location.distanceBetween(userLatLng.latitude, userLatLng.longitude, driverLatLng.latitude, driverLatLng.longitude, results);
-                    mDriverMarker.setSnippet(results[0] + "Metres away");
+                    //Location.distanceBetween(userLatLng.latitude, userLatLng.longitude, driverLatLng.latitude, driverLatLng.longitude, results);
+                    //mDriverMarker.setSnippet(results[0] + "Metres away");
                     mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLng).title("your driver"));
                 }
             }
@@ -594,17 +669,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        /*
-        String userId = FirebaseAuth.getInstance().getUid();
-        DatabaseReference customerAvailabilityRef = FirebaseDatabase.getInstance().getReference().child("Customer Availability");
-
-        GeoFire geoFire = new GeoFire(customerAvailabilityRef);
-        geoFire.removeLocation(userId);*/
-
-    }
 
     @Override
     public void onTaskDone(Object... values) {
