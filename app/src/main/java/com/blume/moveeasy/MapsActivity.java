@@ -71,6 +71,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -95,12 +96,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<AutocompletePrediction> predictionList;
 
     GoogleApiClient mGoogleApiClient;
-    Location mLastLocation, mPickupLocation;
+    Location mLastLocation, mPickupLocation, DestinationLocation;
     LocationRequest mLocationRequest;
     Marker pickupLocationMarker, destinationMarker;
     Polyline currentPolyline;
     private MarkerOptions place1, place2;
-    LatLng requestLatLng;
+    LatLng userLatLng;
 
     private MaterialSearchBar materialSearchBar;
     private DrawerLayout drawerLayout;
@@ -144,21 +145,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.makeText(MapsActivity.this, "Please Enter Destination", Toast.LENGTH_LONG).show();
                 }else {
 
-                    //requestLatLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
-                    //place1.position(requestLatLng);
-
+                    //Setting pick up location marker
                     MarkerOptions uMarkerOptions = new MarkerOptions();
                     uMarkerOptions.position(userLatLng);
                     uMarkerOptions.title("Pick-up Location");
                     uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
                     pickupLocationMarker = mMap.addMarker(uMarkerOptions);
 
+                    //Setting pickup location details
                     String userId = FirebaseAuth.getInstance().getUid();
                     DatabaseReference customerAvailabilityRef = FirebaseDatabase.getInstance().getReference().child("CustomerRequest");
-
                     GeoFire geoFire = new GeoFire(customerAvailabilityRef);
                     geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+
+                    //Setting Destination and fare details
+                    DatabaseReference destinationRef = FirebaseDatabase.getInstance().getReference().child("RequestDestination");
+                    GeoFire destnGeoFire = new GeoFire(destinationRef);
+                    destnGeoFire.setLocation(userId, new GeoLocation(DestinationLocation.getLatitude(), DestinationLocation.getLongitude()));
+
+                    destinationRef.child(userId).child("Price").setValue(mDescription[0]);
 
                     mRequest.setText("Submitting your request...");
 
@@ -167,7 +173,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        place1 = new MarkerOptions().position(new LatLng(-1.310136, 36.813501)).title("Strathmore");
+        //initialize place1
+        place1 = new MarkerOptions();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -288,11 +295,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         /*mMap.moveCamera(CameraUpdateFactory.newLatLng(latLngOfPlace));
                                         mMap.animateCamera(CameraUpdateFactory.zoomBy(DEFAULT_ZOOM));*/
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngOfPlace, DEFAULT_ZOOM));
-                                // LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-                                /*if(destinationMarker != null){
+                                //setting destination location
+                                DestinationLocation = new Location("");
+                                DestinationLocation.setLatitude(latLngOfPlace.latitude);
+                                DestinationLocation.setLongitude(latLngOfPlace.longitude);
+
+                                //setting destination marker
+                                if(destinationMarker != null){
                                     destinationMarker.remove();
-                                }*/
+                                }
 
                                 MarkerOptions uMarkerOptions = new MarkerOptions();
                                 uMarkerOptions.position(latLngOfPlace);
@@ -300,7 +312,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                                 Location.distanceBetween(userLatLng.latitude, userLatLng.longitude, latLngOfPlace.latitude, latLngOfPlace.longitude, toDestination);
                                 uMarkerOptions.snippet(toDestination[0] + " Metres away");
-                                getEstimate(toDestination);
+                                getEstimate(toDestination);//getting estimate
+
+                                destinationMarker = mMap.addMarker(uMarkerOptions);
+                                new FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
 
                                 //listview adapter
                                 listView=findViewById(R.id.listView);
@@ -309,29 +324,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 listView.setAdapter(adapter);
                                 linearLayout = findViewById(R.id.bottom_sheet);
 
-
-
                                 final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
-
-                                destinationMarker = mMap.addMarker(uMarkerOptions);
-                                new FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
+                                //list view visible
                                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-
-                                /*listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                    @Override
-                                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                        //mRequest.setVisibility(View.VISIBLE);
-                                        //String vehicleType = parent.getItemAtPosition(position).toString();
-                                        MyObject tmp=(MyObject) parent.getItemAtPosition(position);
-                                        Toast.makeText(MapsActivity.this, "Vehicle: "+tmp.getVehicle(), Toast.LENGTH_LONG).show();
-                                    }
-
-                                    @Override
-                                    public void onNothingSelected(AdapterView<?> parent) {
-
-                                    }
-                                });*/
 
                                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                     @Override
@@ -351,8 +346,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                     }
                                 });
-
-                                //mRequest.setVisibility(View.VISIBLE);
 
 
                             }
@@ -634,7 +627,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    LatLng userLatLng;
+
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;

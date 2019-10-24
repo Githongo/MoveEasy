@@ -36,11 +36,6 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference mDatabse = database.getReference("message");
-    mDatabse.setValue("Hello World");
-
-
     mfbAuth = FirebaseAuth.getInstance();
     email = findViewById(R.id.Email);
     pword = findViewById(R.id.password);
