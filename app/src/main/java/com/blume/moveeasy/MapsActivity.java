@@ -71,6 +71,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -145,7 +146,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.makeText(MapsActivity.this, "Please Enter Destination", Toast.LENGTH_LONG).show();
                 }else {
 
-
                     //Setting pick up location marker
                     MarkerOptions uMarkerOptions = new MarkerOptions();
                     uMarkerOptions.position(userLatLng);
@@ -168,6 +168,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     mRequest.setText("Submitting your request...");
 
+                    //Removing input components
+                    materialSearchBar.setVisibility(View.INVISIBLE);
+                    BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     getClosestDriver();
                 }
             }
@@ -324,7 +328,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 listView.setAdapter(adapter);
                                 linearLayout = findViewById(R.id.bottom_sheet);
 
-                                final BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
+                                BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
                                 //list view visible
                                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
