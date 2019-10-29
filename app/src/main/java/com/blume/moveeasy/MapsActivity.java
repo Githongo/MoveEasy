@@ -2,6 +2,7 @@ package com.blume.moveeasy;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -102,12 +103,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker pickupLocationMarker, destinationMarker;
     Polyline currentPolyline;
     private MarkerOptions place1, place2;
-    LatLng userLatLng;
+    LatLng userLatLng, pickupLatLng;
+    CoordinatorLayout coordinatorLayout;
 
     private MaterialSearchBar materialSearchBar;
+    //material searchbar1
+    private  MaterialSearchBar materialSearchBar1;
+
     private DrawerLayout drawerLayout;
     private View mapView;
     private Button mRequest;
+    private TextView nameView, regnoView, phonenoView;
+
 
     //listview
     LinearLayout linearLayout;
@@ -129,10 +136,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
         materialSearchBar = findViewById(R.id.searchBar);
+
+        materialSearchBar1 = findViewById(R.id.searchBar1);
+        //drawerLayout =findViewById(R.id.drawer_layout);
+
+        //BOTTOM SHEET HIDDEN AT PEAK HEIGHT
+        linearLayout = findViewById(R.id.driverbottomsheet);
+        BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(linearLayout);
+        bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        //Destination material search bar hidden
+        materialSearchBar.setVisibility(View.INVISIBLE);
+
         //Confirm Request Button
         mRequest = findViewById(R.id.request);
+        coordinatorLayout = findViewById(R.id.maplayout);
         mRequest.setVisibility(View.GONE);
 
 
@@ -147,17 +166,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }else {
 
                     //Setting pick up location marker
-                    MarkerOptions uMarkerOptions = new MarkerOptions();
+                    /*MarkerOptions uMarkerOptions = new MarkerOptions();
                     uMarkerOptions.position(userLatLng);
                     uMarkerOptions.title("Pick-up Location");
                     uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
                     pickupLocationMarker = mMap.addMarker(uMarkerOptions);
+                    */
 
                     //Setting pickup location details
                     String userId = FirebaseAuth.getInstance().getUid();
                     DatabaseReference customerAvailabilityRef = FirebaseDatabase.getInstance().getReference().child("CustomerRequest");
                     GeoFire geoFire = new GeoFire(customerAvailabilityRef);
-                    geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+                    geoFire.setLocation(userId, new GeoLocation(mPickupLocation.getLatitude(), mPickupLocation.getLongitude()));
 
                     //Setting Destination and fare details
                     DatabaseReference destinationRef = FirebaseDatabase.getInstance().getReference().child("RequestDestination");
@@ -166,12 +186,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     destinationRef.child(userId).child("Price").setValue(mDescription[0]);
 
-                    mRequest.setText("Submitting your request...");
+                    /* mRequest.setText("Submitting your request...");*/
+                    final Snackbar snack = Snackbar.make(coordinatorLayout, "Submitting your request...", Snackbar.LENGTH_LONG );
+                    snack.setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snack.dismiss();
+                        }
+                    });
+                    snack.show();
+                    mRequest.setVisibility(View.INVISIBLE);
+
 
                     //Removing input components
-                    materialSearchBar.setVisibility(View.INVISIBLE);
+                    materialSearchBar1.setVisibility(View.GONE);
+                    materialSearchBar.setVisibility(View.GONE);
                     BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(linearLayout);
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
                     getClosestDriver();
                 }
             }
@@ -189,8 +221,194 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         placesClient = Places.createClient(this);
         final AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
+        //Pickup Location Searchbar
+        materialSearchBar1.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) {
+
+            }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+                startSearch(text.toString(), true, null,true);
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+                if (buttonCode == MaterialSearchBar.BUTTON_NAVIGATION){
+                    //opening a nav bar
+                    //drawerLayout.openDrawer(Gravity.LEFT);
 
 
+                }else if(buttonCode == MaterialSearchBar.BUTTON_BACK){
+                    materialSearchBar1.disableSearch();
+                }
+
+            }
+        });
+
+        materialSearchBar1.addTextChangeListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                FindAutocompletePredictionsRequest predictionsRequest = FindAutocompletePredictionsRequest.builder()
+                        .setCountry("ke")
+                        //.setTypeFilter(TypeFilter.CITIES)
+                        .setSessionToken(token)
+                        .setQuery(charSequence.toString())
+                        .build();
+                placesClient.findAutocompletePredictions(predictionsRequest).addOnCompleteListener(new OnCompleteListener<FindAutocompletePredictionsResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<FindAutocompletePredictionsResponse> task) {
+                        if(task.isSuccessful()){
+                            FindAutocompletePredictionsResponse predictionsResponse = task.getResult();
+                            if (predictionsResponse != null){
+                                predictionList = predictionsResponse.getAutocompletePredictions();
+                                List<String> suggestionsList = new ArrayList<>();
+                                for (int i=0; i<predictionList.size(); i++ ){
+                                    AutocompletePrediction prediction = predictionList.get(i);
+                                    suggestionsList.add(prediction.getFullText(null).toString());
+                                }
+                                materialSearchBar1.updateLastSuggestions(suggestionsList);
+                                if (!materialSearchBar1.isSuggestionsVisible()){
+                                    materialSearchBar1.showSuggestionsList();
+                                }
+                            }
+
+                        } else {
+                            Log.i("mytag", "Prediction Fetching task unsuccessful");
+
+                        }
+                    }
+                });
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        materialSearchBar1.setSuggestionsClickListener(new SuggestionsAdapter.OnItemViewClickListener() {
+            @Override
+            public void OnItemClickListener(int position, View v) {
+                if (position >= predictionList.size()){
+                    return;
+                }
+                AutocompletePrediction selectedPrediction = predictionList.get(position);
+                String suggestion = materialSearchBar1.getLastSuggestions().get(position).toString();
+                materialSearchBar1.setText(suggestion);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        materialSearchBar1.clearSuggestions();
+                    }
+                },1000);
+
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+
+                if (imm != null){
+                    imm.hideSoftInputFromWindow(materialSearchBar1.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                    String placeId = selectedPrediction.getPlaceId();
+                    List<Place.Field> placeFields = Arrays.asList(Place.Field.LAT_LNG);
+
+                    FetchPlaceRequest fetchPlaceRequest = FetchPlaceRequest.builder(placeId, placeFields).build();
+                    placesClient.fetchPlace(fetchPlaceRequest).addOnSuccessListener(new OnSuccessListener<FetchPlaceResponse>() {
+                        @Override
+                        public void onSuccess(FetchPlaceResponse fetchPlaceResponse) {
+                            Place place = fetchPlaceResponse.getPlace();
+                            Log.i("my tag", "Place found: " + place.getName());
+                            LatLng latLngOfPlace =place.getLatLng();
+
+                            if (latLngOfPlace != null){
+                                        /*mMap.moveCamera(CameraUpdateFactory.newLatLng(latLngOfPlace));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomBy(DEFAULT_ZOOM));*/
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngOfPlace, DEFAULT_ZOOM));
+
+                                pickupLatLng = latLngOfPlace;
+                                mPickupLocation = new Location("");
+                                mPickupLocation.setLatitude(latLngOfPlace.latitude);
+                                mPickupLocation.setLongitude(latLngOfPlace.longitude);
+
+                                //setting destination marker
+                                if(pickupLocationMarker != null){
+                                    pickupLocationMarker.remove();
+                                }
+
+                                MarkerOptions uMarkerOptions = new MarkerOptions();
+                                uMarkerOptions.position(latLngOfPlace);
+                                uMarkerOptions.title("Pickup Location");
+                                uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                                pickupLocationMarker = mMap.addMarker(uMarkerOptions);
+
+                                materialSearchBar.setVisibility(View.VISIBLE);
+
+
+                            }
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            if (e instanceof ApiException){
+                                ApiException apiException = (ApiException) e ;
+                                apiException.printStackTrace();
+                                int statusCode = apiException.getStatusCode();
+                                Log.i("my tag", "Place not found: " + e.getMessage());
+                                Log.i("my tag", "status code: "+ statusCode);
+                            }
+
+                        }
+                    });
+
+                    mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                        @Override
+                        public boolean onMyLocationButtonClick() {
+                            if (materialSearchBar1.isSuggestionsVisible())
+                                materialSearchBar1.clearSuggestions();
+                            if (materialSearchBar1.isSearchEnabled())
+                                materialSearchBar1.disableSearch();
+                            return false;
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void OnItemDeleteListener(int position, View v) {
+
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //Destination location searchbar
         materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
             @Override
             public void onSearchStateChanged(boolean enabled) {
@@ -206,7 +424,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onButtonClicked(int buttonCode) {
                 if (buttonCode == MaterialSearchBar.BUTTON_NAVIGATION){
                     //opening a nav bar
-                   // drawerLayout.openDrawer(Gravity.LEFT);
+                    // drawerLayout.openDrawer(Gravity.LEFT);
 
 
                 }else if(buttonCode == MaterialSearchBar.BUTTON_BACK){
@@ -314,12 +532,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 uMarkerOptions.position(latLngOfPlace);
                                 uMarkerOptions.title("Destination Location");
                                 uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                                Location.distanceBetween(userLatLng.latitude, userLatLng.longitude, latLngOfPlace.latitude, latLngOfPlace.longitude, toDestination);
+                                Location.distanceBetween(pickupLatLng.latitude, pickupLatLng.longitude, latLngOfPlace.latitude, latLngOfPlace.longitude, toDestination);
                                 uMarkerOptions.snippet(toDestination[0] + " Metres away");
                                 getEstimate(toDestination);//getting estimate
 
                                 destinationMarker = mMap.addMarker(uMarkerOptions);
-                                new FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
+                                new FetchURL(MapsActivity.this).execute(getUrl(pickupLocationMarker.getPosition(), destinationMarker.getPosition(), "driving"), "driving");
 
                                 //listview adapter
                                 listView=findViewById(R.id.listView);
@@ -544,7 +762,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLong = 0;
-                    mRequest.setText("Driver Found");
+                    /*mRequest.setText("Driver Found");*/
+
+                    final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Driver Found", Snackbar.LENGTH_LONG );
+                    snackbar.setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
+                    //show bottomsheet
+                    linearLayout = findViewById(R.id.driverbottomsheet);
+                    BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(linearLayout);
+                    bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
 
                     if(map.get(0) != null){
                         locationLat = Double.parseDouble(map.get(0).toString());
@@ -564,10 +795,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     driverLocation.setLongitude(driverLatLng.longitude);
                     float distance = mPickupLocation.distanceTo(driverLocation);
 
-                    if (distance<100){
-                        mRequest.setText("Driver's Here");
+                    if (distance<300){
+                        final Snackbar snackbar1 = Snackbar.make(coordinatorLayout, "Driver's here", Snackbar.LENGTH_LONG );
+                        snackbar1.setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                snackbar1.dismiss();
+                            }
+                        });
+                        snackbar1.show();
+                        //mRequest.setText("Driver's Here");
                     }else{
-                        mRequest.setText("Driver Found: " + distance);
+                        final Snackbar snackbar2 = Snackbar.make(coordinatorLayout, "Driver Found  " + distance, Snackbar.LENGTH_LONG );
+                        snackbar2.setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                snackbar2.dismiss();
+                            }
+                        });
+                        snackbar2.show();
+                        //mRequest.setText("Driver Found: " + distance);
                     }
 
 
@@ -685,4 +932,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             currentPolyline.remove();
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
     }
+
+
 }

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:id="@+id/maplayout"
     tools:context="com.blume.moveeasy.MapsActivity">
 
 
@@ -21,18 +22,37 @@
         tools:layout_editor_absoluteX="16dp" />
 
     <com.mancj.materialsearchbar.MaterialSearchBar
-        android:id="@+id/searchBar"
+        android:id="@+id/searchBar1"
         style="@style/MaterialSearchBarLight"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="14dp"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="100dp"
         android:layout_marginEnd="50dp"
-        android:layout_marginBottom="400dp"
+        android:layout_marginBottom="800dp"
         android:elevation="5dp"
-        android:outlineProvider="bounds"
         android:imeOptions="actionDone"
+        android:outlineProvider="bounds"
+        app:mt_hint="Enter Package pickup location"
+        app:mt_maxSuggestionsCount="10"
+        app:mt_navIconEnabled="true"
+        app:mt_placeholder="Enter Parcel pickup location"
+        app:mt_speechMode="false" />
+
+
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        android:id="@+id/searchBar"
+        style="@style/MaterialSearchBarLight"
+        android:layout_width="383dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="80dp"
+        android:elevation="5dp"
+        android:imeOptions="actionDone"
+        android:outlineProvider="bounds"
         app:mt_hint="Enter Package drop off destination"
         app:mt_maxSuggestionsCount="10"
         app:mt_navIconEnabled="false"
@@ -40,7 +60,6 @@
         app:mt_speechMode="false"
 
         />
-
 
     <Button
         android:id="@+id/request"
@@ -55,16 +74,7 @@
         />
 
     <include layout="@layout/bottom_sheet"></include>
-
-
-
-
-
-
-
-
-
-
+    <include layout="@layout/driverbottomsheet"></include>
 
 
 
