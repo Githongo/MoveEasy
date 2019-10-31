@@ -136,9 +136,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        //finding layout components
         materialSearchBar = findViewById(R.id.searchBar);
-
         materialSearchBar1 = findViewById(R.id.searchBar1);
+        nameView = findViewById(R.id.namevalue);
+        regnoView = findViewById(R.id.regnovalue);
+        phonenoView = findViewById(R.id.phonenovalue);
+
         //drawerLayout =findViewById(R.id.drawer_layout);
 
         //BOTTOM SHEET HIDDEN AT PEAK HEIGHT
@@ -385,24 +389,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -772,7 +758,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                     snackbar.show();
-                    //show bottomsheet
+
+                    //get driver details
+                    getDriverInfo();
+
+                    //show driver details bottomsheet
                     linearLayout = findViewById(R.id.driverbottomsheet);
                     BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(linearLayout);
                     bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -795,7 +785,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     driverLocation.setLongitude(driverLatLng.longitude);
                     float distance = mPickupLocation.distanceTo(driverLocation);
 
-                    if (distance<300){
+                    if (distance<500){
                         final Snackbar snackbar1 = Snackbar.make(coordinatorLayout, "Driver's here", Snackbar.LENGTH_LONG );
                         snackbar1.setAction("OK", new View.OnClickListener() {
                             @Override
@@ -827,6 +817,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+    }
+
+    private void getDriverInfo(){
+        DatabaseReference mDriverDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Drivers").child(driverFoundID);
+        mDriverDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    if(dataSnapshot.child("name")!=null){
+                        nameView.setText(dataSnapshot.child("Username").getValue().toString());
+                    }
+                    if(dataSnapshot.child("phone")!=null){
+                        regnoView.setText(dataSnapshot.child("Reg_no").getValue().toString());
+                    }
+                    if(dataSnapshot.child("name")!=null){
+                        phonenoView.setText(dataSnapshot.child("Phone").getValue().toString());
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
