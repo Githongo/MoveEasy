@@ -102,12 +102,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationRequest mLocationRequest;
     Marker pickupLocationMarker, destinationMarker;
     Polyline currentPolyline;
-    private MarkerOptions place1, place2;
+    private MarkerOptions place1;
     LatLng userLatLng, pickupLatLng;
     CoordinatorLayout coordinatorLayout;
+    BottomSheetBehavior bottomSheetBehavior1;
 
+    //Pickup Search Bar
     private MaterialSearchBar materialSearchBar;
-    //material searchbar1
+    //Destination Search Bar
     private  MaterialSearchBar materialSearchBar1;
 
     private DrawerLayout drawerLayout;
@@ -115,6 +117,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button mRequest;
     private TextView nameView, regnoView, phonenoView;
 
+    //Pick up and Destination places
+    String pickupPlace, destinationPlace;
 
     //listview
     LinearLayout linearLayout;
@@ -126,7 +130,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //distance between pickup and destination
     float toDestination[] = new float[10];
 
-
+    //Default Camera zoom
     private final float DEFAULT_ZOOM = 14;
 
 
@@ -189,8 +193,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     destnGeoFire.setLocation(userId, new GeoLocation(DestinationLocation.getLatitude(), DestinationLocation.getLongitude()));
 
                     destinationRef.child(userId).child("Price").setValue(mDescription[0]);
+                    destinationRef.child(userId).child("Pickup").setValue(pickupPlace);
+                    destinationRef.child(userId).child("Destination").setValue(destinationPlace);
 
-                    /* mRequest.setText("Submitting your request...");*/
+
                     final Snackbar snack = Snackbar.make(coordinatorLayout, "Submitting your request...", Snackbar.LENGTH_LONG );
                     snack.setAction("OK", new View.OnClickListener() {
                         @Override
@@ -306,6 +312,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 AutocompletePrediction selectedPrediction = predictionList.get(position);
                 String suggestion = materialSearchBar1.getLastSuggestions().get(position).toString();
                 materialSearchBar1.setText(suggestion);
+                pickupPlace = suggestion;
 
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -394,7 +401,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        //Destination location searchbar
+        //Destination location Search Bar
         materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
             @Override
             public void onSearchStateChanged(boolean enabled) {
@@ -475,6 +482,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 AutocompletePrediction selectedPrediction = predictionList.get(position);
                 String suggestion = materialSearchBar.getLastSuggestions().get(position).toString();
                 materialSearchBar.setText(suggestion);
+                destinationPlace = suggestion;
 
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -500,8 +508,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             LatLng latLngOfPlace =place.getLatLng();
 
                             if (latLngOfPlace != null){
-                                        /*mMap.moveCamera(CameraUpdateFactory.newLatLng(latLngOfPlace));
-                                        mMap.animateCamera(CameraUpdateFactory.zoomBy(DEFAULT_ZOOM));*/
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngOfPlace, DEFAULT_ZOOM));
 
                                 //setting destination location
@@ -593,8 +599,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
-
+    //Array Adapter class
     class MyAdapter extends ArrayAdapter<String> {
 
         Context context;
@@ -653,6 +658,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    | Map functions start here:-
+    |
+     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -698,13 +708,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String customerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     HashMap map = new HashMap();
                     map.put("customerRideId", customerId);
-                    //map.put("destination", destination);
-                    //map.put("destinationLat", destinationLatLng.latitude);
-                    //map.put("destinationLng", destinationLatLng.longitude);
+
                     driverRef.updateChildren(map);
 
                     getDriverLocation();
-                    mRequest.setText("Looking for driver location...");
+                    getHasRideEnded();
 
                 }
             }
@@ -764,7 +772,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     //show driver details bottomsheet
                     linearLayout = findViewById(R.id.driverbottomsheet);
-                    BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(linearLayout);
+                    bottomSheetBehavior1 = BottomSheetBehavior.from(linearLayout);
                     bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
 
                     if(map.get(0) != null){
@@ -786,7 +794,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     float distance = mPickupLocation.distanceTo(driverLocation);
 
                     if (distance<500){
-                        final Snackbar snackbar1 = Snackbar.make(coordinatorLayout, "Driver's here", Snackbar.LENGTH_LONG );
+                        final Snackbar snackbar1 = Snackbar.make(coordinatorLayout, "Meet driver at the pick up point", Snackbar.LENGTH_INDEFINITE );
                         snackbar1.setAction("OK", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -794,7 +802,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                         snackbar1.show();
-                        //mRequest.setText("Driver's Here");
                     }else{
                         final Snackbar snackbar2 = Snackbar.make(coordinatorLayout, "Driver Found  " + distance, Snackbar.LENGTH_LONG );
                         snackbar2.setAction("OK", new View.OnClickListener() {
@@ -804,7 +811,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                         snackbar2.show();
-                        //mRequest.setText("Driver Found: " + distance);
                     }
 
 
@@ -843,6 +849,84 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
+
+    private DatabaseReference driveHasEndedRef;
+    ValueEventListener driveHasEndedRefListener;
+    private void getHasRideEnded(){
+        driveHasEndedRef = FirebaseDatabase.getInstance().getReference().child("Drivers").child(driverFoundID).child("customerRequest").child("customerRideId");
+        driveHasEndedRefListener = driveHasEndedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+
+                }else{
+                    final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Package Dropped of Successfully!", Snackbar.LENGTH_INDEFINITE );
+                    snackbar.setAction("CONFIRM", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            endRide();
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void endRide() {
+        //removing active Listeners
+        geoQuery.removeAllListeners();
+        driverLocationRef.removeEventListener(driverLocationRefListener);
+        driveHasEndedRef.removeEventListener(driveHasEndedRefListener);
+
+        if (driverFoundID != null){
+            DatabaseReference driverRef = FirebaseDatabase.getInstance().getReference().child("Drivers").child(driverFoundID).child("customerRequest");
+            driverRef.removeValue();
+            driverFoundID = null;
+
+        }
+        driverFound = false;
+        radius = 1;
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("CustomerRequest");
+        GeoFire geoFire = new GeoFire(ref);
+        geoFire.removeLocation(userId);
+
+        //Clearing map
+        erasePolyline();
+        if(pickupLocationMarker != null){
+            pickupLocationMarker.remove();
+        }
+        if(destinationMarker != null){
+            destinationMarker.remove();
+        }
+        if (mDriverMarker != null){
+            mDriverMarker.remove();
+        }
+
+        //removing driver bottom sheet
+        bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        //refreshing material search bars
+        materialSearchBar.clearSuggestions();
+        materialSearchBar.setText("");
+        materialSearchBar1.setText("");
+
+        //setting pickup search bar to visible
+        materialSearchBar1.setVisibility(View.VISIBLE);
+
+
+    }
+
+    private void erasePolyline() {
+        currentPolyline.remove();
     }
 
 
