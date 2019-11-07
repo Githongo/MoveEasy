@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(mfbUser != null && mfbUser.isEmailVerified()){
           Toast.makeText(MainActivity.this, "Welcome Back...", Toast.LENGTH_SHORT).show();
-          Intent ToHome = new Intent(MainActivity.this, MapsActivity.class);
+          Intent ToHome = new Intent(MainActivity.this, HistoryActivity.class);
           startActivity(ToHome);
         }
 

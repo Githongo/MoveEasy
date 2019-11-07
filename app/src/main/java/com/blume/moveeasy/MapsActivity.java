@@ -173,14 +173,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.makeText(MapsActivity.this, "Please Enter Destination", Toast.LENGTH_LONG).show();
                 }else {
 
-                    //Setting pick up location marker
-                    /*MarkerOptions uMarkerOptions = new MarkerOptions();
-                    uMarkerOptions.position(userLatLng);
-                    uMarkerOptions.title("Pick-up Location");
-                    uMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
-                    pickupLocationMarker = mMap.addMarker(uMarkerOptions);
-                    */
-
                     //Setting pickup location details
                     String userId = FirebaseAuth.getInstance().getUid();
                     DatabaseReference customerAvailabilityRef = FirebaseDatabase.getInstance().getReference().child("CustomerRequest");
@@ -831,13 +823,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    if(dataSnapshot.child("name")!=null){
+                    if(dataSnapshot.child("Username")!=null){
                         nameView.setText(dataSnapshot.child("Username").getValue().toString());
                     }
-                    if(dataSnapshot.child("phone")!=null){
+                    if(dataSnapshot.child("Reg_no")!=null){
                         regnoView.setText(dataSnapshot.child("Reg_no").getValue().toString());
                     }
-                    if(dataSnapshot.child("name")!=null){
+                    if(dataSnapshot.child("Phone")!=null){
                         phonenoView.setText(dataSnapshot.child("Phone").getValue().toString());
                     }
 
