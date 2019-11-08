@@ -87,8 +87,9 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
                             dateView.setText("Date: "+ getDate(Long.valueOf(child.getValue().toString())));
                         }
                         if (child.getKey().equals("distance")){
-                            String distance = child.getValue().toString();
-                            distanceView.setText("Distance: "+ distance + " Metres");
+                            Float dist = Float.valueOf(child.getValue().toString());
+                            int distance = Math.round(dist)/1000;
+                            distanceView.setText("Distance: "+ distance + " Kilometres");
                         }
                         if (child.getKey().equals("pickup")){
                             pickupLocationView.setText("From: " +child.getValue().toString());
@@ -97,7 +98,7 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
                             destinationLocationView.setText("Destination: " +child.getValue().toString());
                         }
                         if (child.getKey().equals("price")){
-                            priceView.setText("Price: " + child.getValue().toString());
+                            priceView.setText("Price: " + child.getValue().toString() + " KES");
                         }
                         if (dataSnapshot.child("driver")!=null){
                             driverId = dataSnapshot.child("driver").getValue().toString();

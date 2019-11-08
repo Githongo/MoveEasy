@@ -15,12 +15,16 @@ public class HistoryViewHolders extends RecyclerView.ViewHolder implements View.
 
     public TextView rideId;
     public TextView time;
+    public TextView pickup;
+    public TextView destination;
 
     public HistoryViewHolders(@NonNull View itemView) {
         super(itemView);
         itemView.setOnClickListener(this);
         rideId = (TextView) itemView.findViewById(R.id.rideId);
         time = (TextView) itemView.findViewById(R.id.time);
+        pickup = (TextView) itemView.findViewById(R.id.ridePickup);
+        destination = (TextView) itemView.findViewById(R.id.rideDestination);
     }
 
     @Override

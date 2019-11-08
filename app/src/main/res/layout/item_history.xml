@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/rideId"
-        android:textSize="12dp"
+        android:textSize="2dp"
         android:text="rideId"
         android:visibility="invisible"/>
     <TextView
@@ -31,5 +31,6 @@
         android:id="@+id/rideDestination"
         android:textSize="15dp"
         android:text="To: Destination Location" />
+
 
 </LinearLayout>
