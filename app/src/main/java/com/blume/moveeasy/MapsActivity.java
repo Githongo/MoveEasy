@@ -122,7 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DrawerLayout drawerLayout;
     private View mapView;
     private Button mRequest;
-    private TextView nameView, regnoView, phonenoView;
+    private TextView nameView, regnoView, phonenoView, navHeaderUsername;
 
     //Pick up and Destination places
     String pickupPlace, destinationPlace;
@@ -164,6 +164,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+
+        //finding drawer header Username view and setting it
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        navHeaderUsername = headerView.findViewById(R.id.navUsername);
+        String userId = FirebaseAuth.getInstance().getUid();
+        getUserInfo(userId);
+
 
         //finding search bar components
         materialSearchBar = findViewById(R.id.searchBar);
@@ -987,6 +995,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         materialSearchBar1.setVisibility(View.VISIBLE);
 
 
+    }
+
+    private void getUserInfo(String userId) {
+        DatabaseReference userInfoRef = FirebaseDatabase.getInstance().getReference().child("Users").child(userId);
+        userInfoRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for(DataSnapshot child : dataSnapshot.getChildren()) {
+                        if (child.getKey().equals("Username")) {
+                            if (child.getKey().equals("Username")) {
+                                navHeaderUsername.setText(child.getValue().toString());
+                            }
+
+                        }
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void erasePolyline() {

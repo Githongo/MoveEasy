@@ -8,8 +8,9 @@
 
     <ImageView
         android:id="@+id/userImageView"
-        android:layout_width="125dp"
-        android:layout_height="122dp"
+        android:layout_width="142dp"
+        android:layout_height="138dp"
+        android:contentDescription="TODO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,8 +20,9 @@
 
 
     <LinearLayout
-        android:layout_width="279dp"
-        android:layout_height="254dp"
+        android:layout_width="314dp"
+        android:layout_height="298dp"
+        android:layout_marginTop="32dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,7 +34,7 @@
             android:id="@+id/usernameLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20sp"
+            android:layout_marginBottom="10sp"
             android:text="Username:"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -42,13 +44,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20sp"
-            android:text="phone" />
+            android:text="Username"
+            android:textSize="25sp"
+            android:textStyle="italic" />
 
         <TextView
             android:id="@+id/phoneLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20sp"
+            android:layout_marginBottom="10sp"
             android:text="Phone:"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -58,13 +62,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20sp"
-            android:text="name" />
+            android:text="phone"
+            android:textSize="25sp"
+            android:textStyle="italic" />
 
         <TextView
             android:id="@+id/emailLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20sp"
+            android:layout_marginBottom="10sp"
             android:text="Email:"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -74,7 +80,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20sp"
-            android:text="phone" />
+            android:text="email"
+            android:textSize="25sp"
+            android:textStyle="italic" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
