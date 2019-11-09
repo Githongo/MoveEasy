@@ -12,7 +12,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".HistorySingleActivity"></activity>
+        <activity android:name=".ProfileActivity"></activity>
+        <activity
+            android:name=".NavbarActivity"
+            android:label="@string/title_activity_navbar"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".HistorySingleActivity" />
         <activity android:name=".HistoryActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

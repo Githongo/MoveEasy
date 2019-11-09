@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/profile"
+            android:icon="@drawable/ic_person_black_24dp"
+            android:title="Profile" />
+        <item
+            android:id="@+id/userhistory"
+            android:icon="@drawable/ic_history_black_48dp"
+            android:title="History" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_arrow_left_black_48dp"
+            android:title="Logout" />
+
+    </group>
+
+
+
+</menu>

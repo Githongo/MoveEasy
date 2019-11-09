@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.gesture.Prediction;
 import android.location.Location;
@@ -20,12 +21,14 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -72,6 +75,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
@@ -90,7 +94,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener, TaskLoadedCallback {
+        com.google.android.gms.location.LocationListener, TaskLoadedCallback, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener {
 
     private static final int REQUEST_LOCATION_PERMISSION = 99;
     private GoogleMap mMap;
@@ -106,6 +110,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LatLng userLatLng, pickupLatLng;
     CoordinatorLayout coordinatorLayout;
     BottomSheetBehavior bottomSheetBehavior1;
+
+    //hamburger menu
+    private ImageButton menu;
 
     //Pickup Search Bar
     private MaterialSearchBar materialSearchBar;
@@ -140,14 +147,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        //finding layout components
+        // initializing navigation view
+        NavigationView mNavigationVIew = (NavigationView) findViewById(R.id.nav_view);
+        mNavigationVIew.setNavigationItemSelectedListener(this);
+
+        drawerLayout =findViewById(R.id.drawer_layout);
+        drawerLayout.setDrawerListener(this);
+
+        menu = findViewById(R.id.hamburger);
+
+        //show drawer layout
+        menu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(Gravity.LEFT);
+
+            }
+        });
+
+        //finding search bar components
         materialSearchBar = findViewById(R.id.searchBar);
         materialSearchBar1 = findViewById(R.id.searchBar1);
         nameView = findViewById(R.id.namevalue);
         regnoView = findViewById(R.id.regnovalue);
         phonenoView = findViewById(R.id.phonenovalue);
 
-        //drawerLayout =findViewById(R.id.drawer_layout);
 
         //BOTTOM SHEET HIDDEN AT PEAK HEIGHT
         linearLayout = findViewById(R.id.driverbottomsheet);
@@ -161,8 +185,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mRequest = findViewById(R.id.request);
         coordinatorLayout = findViewById(R.id.maplayout);
         mRequest.setVisibility(View.GONE);
-
-
 
         mRequest.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -589,6 +611,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
+
+
+
+
+
+    @Override
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+    }
+
+    @Override
+    public void onDrawerOpened(@NonNull View drawerView) {
+        materialSearchBar1.setVisibility(View.INVISIBLE);
+        menu.setVisibility(View.INVISIBLE);
+
+    }
+
+    @Override
+    public void onDrawerClosed(@NonNull View drawerView) {
+        materialSearchBar1.setVisibility(View.VISIBLE);
+        menu.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void onDrawerStateChanged(int newState) {
+
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()){
+            case  R.id.profile:
+                Intent toProfile = new Intent(MapsActivity.this, ProfileActivity.class);
+                startActivity(toProfile);
+                break;
+            case R.id.userhistory:
+                Intent toHistory = new Intent(MapsActivity.this, HistoryActivity.class);
+                startActivity(toHistory);
+                break;
+            case R.id.logout:
+                FirebaseAuth.getInstance().signOut();
+                Intent toMain = new Intent(MapsActivity.this, MainActivity.class);
+                startActivity(toMain);
+                break;
+
+        }
+        return true;
+
     }
 
     //Array Adapter class

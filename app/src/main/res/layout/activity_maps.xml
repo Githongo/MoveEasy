@@ -9,8 +9,6 @@
     tools:context="com.blume.moveeasy.MapsActivity">
 
 
-
-
     <fragment
 
         android:id="@+id/map"
@@ -19,37 +17,55 @@
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:context=".MapsActivity"
-        tools:layout_editor_absoluteX="16dp" />
+        tools:layout_editor_absoluteX="16dp"
+
+        />
+
+
+    <include
+        layout="@layout/activity_navbar"
+        />
+
+
+    <ImageButton
+        android:id="@+id/hamburger"
+        android:layout_width="42dp"
+        android:layout_height="41dp"
+        android:layout_gravity="top"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="1600dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/cardview_light_background"
+        android:src="@drawable/ic_menu_black_24dp" />
+
 
     <com.mancj.materialsearchbar.MaterialSearchBar
         android:id="@+id/searchBar1"
         style="@style/MaterialSearchBarLight"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="14dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginBottom="800dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="15dp"
         android:elevation="5dp"
         android:imeOptions="actionDone"
         android:outlineProvider="bounds"
         app:mt_hint="Enter Package pickup location"
         app:mt_maxSuggestionsCount="10"
-        app:mt_navIconEnabled="true"
+        app:mt_navIconEnabled="false"
         app:mt_placeholder="Enter Parcel pickup location"
         app:mt_speechMode="false" />
-
 
     <com.mancj.materialsearchbar.MaterialSearchBar
         android:id="@+id/searchBar"
         style="@style/MaterialSearchBarLight"
-        android:layout_width="383dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:layout_marginStart="15dp"
+        android:layout_marginTop="125dp"
         android:layout_marginEnd="15dp"
-        android:layout_marginTop="80dp"
         android:elevation="5dp"
         android:imeOptions="actionDone"
         android:outlineProvider="bounds"
@@ -73,8 +89,13 @@
         android:layout_gravity="bottom"
         />
 
+
+
+
     <include layout="@layout/bottom_sheet"></include>
     <include layout="@layout/driverbottomsheet"></include>
+
+
 
 
 

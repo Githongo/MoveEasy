@@ -16,16 +16,15 @@
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="322dp"
+        android:layout_height="300dp"
         android:choiceMode="singleChoice"
-        android:listSelector="#1A9A9A"
         android:headerDividersEnabled="false"
+        android:listSelector="#1A9A9A"
 
         >
 
 
     </ListView>
-
 
 
 </LinearLayout>
