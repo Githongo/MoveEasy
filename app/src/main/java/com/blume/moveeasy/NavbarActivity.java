@@ -33,8 +33,6 @@ public class NavbarActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
 
-    TextView navHeaderUsername;
-    String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,14 +40,6 @@ public class NavbarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_navbar);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -63,39 +53,10 @@ public class NavbarActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        //finding nav header username view
-        navHeaderUsername = findViewById(R.id.navUsername);
-
-        userId = FirebaseAuth.getInstance().getUid();
-        getUserInfo(userId);
 
     }
 
-    private void getUserInfo(String userId) {
-        DatabaseReference userInfoRef = FirebaseDatabase.getInstance().getReference().child("Users").child(userId);
-        userInfoRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot child : dataSnapshot.getChildren()) {
-                        if (child.getKey().equals("Username")) {
-                            if (child.getKey().equals("Username")) {
-                                navHeaderUsername.setText(child.getValue().toString());
-                            }
 
-                        }
-
-                    }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -14,7 +14,7 @@
             android:title="History" />
         <item
             android:id="@+id/logout"
-            android:icon="@drawable/ic_arrow_left_black_48dp"
+            android:icon="@drawable/ic_logout"
             android:title="Logout" />
 
     </group>

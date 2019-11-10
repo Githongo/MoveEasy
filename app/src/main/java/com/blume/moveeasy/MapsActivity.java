@@ -12,7 +12,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.gesture.Prediction;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,7 +37,6 @@ import android.widget.Toast;
 
 import com.blume.moveeasy.directionhelpers.FetchURL;
 import com.blume.moveeasy.directionhelpers.TaskLoadedCallback;
-import com.blume.moveeasy.model.MyObject;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
@@ -48,7 +46,6 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -67,17 +64,14 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -87,7 +81,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.mancj.materialsearchbar.adapter.SuggestionsAdapter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -127,7 +120,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //Pick up and Destination places
     String pickupPlace, destinationPlace;
 
-    //listview
+    //list view
     LinearLayout linearLayout;
     ListView listView;
     String mTitle[] = {"Motorbike", "Pickup", "Truck"};
@@ -148,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         // initializing navigation view
-        NavigationView mNavigationVIew = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView mNavigationVIew = findViewById(R.id.nav_view);
         mNavigationVIew.setNavigationItemSelectedListener(this);
 
         drawerLayout =findViewById(R.id.drawer_layout);
@@ -171,7 +164,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         navHeaderUsername = headerView.findViewById(R.id.navUsername);
         String userId = FirebaseAuth.getInstance().getUid();
         getUserInfo(userId);
-
 
         //finding search bar components
         materialSearchBar = findViewById(R.id.searchBar);
@@ -459,7 +451,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 FindAutocompletePredictionsRequest predictionsRequest = FindAutocompletePredictionsRequest.builder()
                         .setCountry("ke")
-                        //.setTypeFilter(TypeFilter.CITIES)
                         .setSessionToken(token)
                         .setQuery(charSequence.toString())
                         .build();
@@ -742,9 +733,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         enableMyLocation();
         buildGoogleApiClient();
 
-        //mMap.addMarker(place1);
-        //mMap.addMarker(place2);
-
         if(mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
             View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
@@ -828,7 +816,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLong = 0;
-                    /*mRequest.setText("Driver Found");*/
 
                     final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Driver Found", Snackbar.LENGTH_LONG );
                     snackbar.setAction("OK", new View.OnClickListener() {
@@ -1080,9 +1067,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
-        //to be changed
+        //in case no pickup location is selected, current location = pickup location
         mPickupLocation = mLastLocation;
-
 
         userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 

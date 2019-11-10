@@ -38,7 +38,7 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
     TextView pickupLocationView, destinationLocationView, distanceView, dateView, priceView, nameView, phoneView, vehicleView;
     Marker pickupMarker, destinationMarker;
 
-    //Database Refrence
+    //Database Reference
     DatabaseReference historyRideInfoRef, historyDriverInfoRef;
 
     private GoogleMap mMap;
@@ -54,7 +54,7 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
         mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
 
-        //initalizing text views
+        //initializing text views
         pickupLocationView = findViewById(R.id.pickupLocation);
         destinationLocationView = findViewById(R.id.destinationLocation);
         distanceView = findViewById(R.id.rideDistance);
@@ -67,16 +67,12 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
         currentUserId = FirebaseAuth.getInstance().getUid();
 
         historyRideInfoRef = FirebaseDatabase.getInstance().getReference().child("History").child(rideId);
-        getRideInfromation();
-
-
-
+        getRideInformation();
 
     }
 
 
-
-    private void getRideInfromation() {
+    private void getRideInformation() {
         historyRideInfoRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -142,6 +138,7 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
         String date = DateFormat.format("dd-MM-yyyy, hh:mm", cal).toString();
         return date;
     }
+
     private void getRideDriverInfo(String driverId) {
         historyDriverInfoRef = FirebaseDatabase.getInstance().getReference().child("Drivers").child(driverId);
         historyDriverInfoRef.addListenerForSingleValueEvent(new ValueEventListener() {

@@ -45,14 +45,6 @@ public class HistoryActivity extends AppCompatActivity {
         mHistoryAdapter = new HistoryAdapter(getDataSetHistory(), HistoryActivity.this);
         mHistoryRecyclerView.setAdapter(mHistoryAdapter);
 
-        //testing
-        /*for(int i = 0; i <100; i++)
-        {
-            HistoryObject obj = new HistoryObject(Integer.toString(i));
-            resultsHistory.add(obj);
-        }
-        mHistoryAdapter.notifyDataSetChanged();*/
-
         userId = FirebaseAuth.getInstance().getUid();
         getUserHistoryIds();
 

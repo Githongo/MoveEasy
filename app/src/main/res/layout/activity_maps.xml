@@ -9,22 +9,38 @@
     tools:context="com.blume.moveeasy.MapsActivity">
 
 
-    <fragment
-
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <androidx.drawerlayout.widget.DrawerLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:context=".MapsActivity"
-        tools:layout_editor_absoluteX="16dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:fitsSystemWindows="true"
+        tools:openDrawer="start">
 
-        />
 
+        <fragment
 
-    <include
-        layout="@layout/activity_navbar"
-        />
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:context=".MapsActivity"
+            tools:layout_editor_absoluteX="16dp"
+
+            />
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="240dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:fitsSystemWindows="true"
+            app:headerLayout="@layout/nav_header_navbar"
+            app:menu="@menu/activity_navbar_drawer" />
+    </androidx.drawerlayout.widget.DrawerLayout>
+
 
 
     <ImageButton
@@ -94,10 +110,6 @@
 
     <include layout="@layout/bottom_sheet"></include>
     <include layout="@layout/driverbottomsheet"></include>
-
-
-
-
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

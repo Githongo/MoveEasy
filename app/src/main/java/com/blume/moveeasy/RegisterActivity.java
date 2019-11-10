@@ -53,8 +53,6 @@ public class RegisterActivity extends AppCompatActivity {
                  String uphone = phone.getText().toString();
                  final int u_phone = Integer.parseInt(uphone);
 
-
-
                 if(e_mail.isEmpty()){
                     email.setError("Fill in email field");
                     email.requestFocus();
@@ -106,8 +104,6 @@ public class RegisterActivity extends AppCompatActivity {
                 else {
                     Toast.makeText(RegisterActivity.this, "An error occurred, Please try again in a few...", Toast.LENGTH_LONG).show();
                 }
-
-
 
             }
         });
